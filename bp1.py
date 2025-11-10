@@ -2,7 +2,7 @@
 from pyspark import SparkContext
 
 
-sc = SparkContext("local", "WordCountApp") 
+sc = SparkContext() 
 
 
 words = ["scala", "java", "hadoop", "spark", "akka", "spark vs hadoop", "pyspark", "pyspark and spark"]
