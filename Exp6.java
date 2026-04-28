@@ -17,17 +17,17 @@ public class Exp6 {
 		Log.printLine("Starting Exp6...");
 
 		try {
-			// Critical: this must be first CloudSim call.
+
 			CloudSim.init(1, Calendar.getInstance(), false);
 
-			// Requirement: 2 datacenters -> Datacenter_0 and Datacenter_1.
+
 			Datacenter datacenter0 = createDatacenter("Datacenter_0");
 			Datacenter datacenter1 = createDatacenter("Datacenter_1");
 			DatacenterBroker broker = new DatacenterBroker("Broker");
 			int brokerId = broker.getId();
 
 			List<Vm> vmList = new ArrayList<Vm>();
-			// Requirement: 2 VMs with same config.
+
 			Vm vm1 = new Vm(0, brokerId, 250, 1, 512, 1000, 10000, "Xen", new CloudletSchedulerTimeShared());
 			Vm vm2 = new Vm(1, brokerId, 250, 1, 512, 1000, 10000, "Xen", new CloudletSchedulerTimeShared());
 			vmList.add(vm1);
@@ -36,7 +36,7 @@ public class Exp6 {
 
 			UtilizationModel full = new UtilizationModelFull();
 			List<Cloudlet> cloudletList = new ArrayList<Cloudlet>();
-			// Requirement: 2 cloudlets -> cloudlet1 and cloudlet2.
+
 			Cloudlet cloudlet1 = new Cloudlet(0, 40000, 1, 300, 300, full, full, full);
 			cloudlet1.setUserId(brokerId);
 			Cloudlet cloudlet2 = new Cloudlet(1, 40000, 1, 300, 300, full, full, full);
@@ -45,7 +45,6 @@ public class Exp6 {
 			cloudletList.add(cloudlet2);
 			broker.submitCloudletList(cloudletList);
 
-			// Critical: binding avoids both cloudlets landing on the same VM unexpectedly.
 			broker.bindCloudletToVm(cloudlet1.getCloudletId(), vm1.getId());
 			broker.bindCloudletToVm(cloudlet2.getCloudletId(), vm2.getId());
 
@@ -68,9 +67,9 @@ public class Exp6 {
 		List<Pe> peList = new ArrayList<Pe>();
 		peList.add(new Pe(0, new PeProvisionerSimple(1000)));
 
-		// Requirement (per datacenter): 1 host in each datacenter.
+
 		hostList.add(new Host(0, new RamProvisionerSimple(2048), new BwProvisionerSimple(10000), 1000000, peList,
-				new VmSchedulerTimeShared(peList)));
+				new VmSchedulerSpaceShared(peList)));
 
 		DatacenterCharacteristics characteristics = new DatacenterCharacteristics("x86", "Linux", "Xen", hostList,
 				10.0, 3.0, 0.05, 0.1, 0.1);
