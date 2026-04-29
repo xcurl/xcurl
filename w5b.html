@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="findFact()">Find Factorial</button>
+<p id="result"></p>
+
+<script>
+function fact(n) {
+    if (n < 0) return "Not defined";
+    let f = 1;
+    for (let i = 1; i <= n; i++) {
+        f *= i;
+    }
+    return f;
+}
+
+function findFact() {
+    let n = parseInt(prompt("Enter number:"));
+    document.getElementById("result").innerHTML =
+        "Factorial of " + n + " = " + fact(n);
+}
+</script>
+
+</body>
+</html>

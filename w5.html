@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Date</title>
+<script>
+function showDate() {
+    document.getElementById("box").value = new Date().toLocaleString();
+}
+</script>
+</head>
+
+<body>
+
+<button onclick="showDate()">Display Date</button><br><br>
+<input type="text" id="box" readonly>
+
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="findFact()">Find Factorial</button>
+<p id="result"></p>
+
+<script>
+function fact(n) {
+    if (n < 0) return "Not defined";
+    let f = 1;
+    for (let i = 1; i <= n; i++) {
+        f *= i;
+    }
+    return f;
+}
+
+function findFact() {
+    let n = parseInt(prompt("Enter number:"));
+    document.getElementById("result").innerHTML =
+        "Factorial of " + n + " = " + fact(n);
+}
+</script>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="showTable()">Show Table</button>
+<pre id="table"></pre>
+
+<script>
+function showTable() {
+    let n = prompt("Enter number:");
+    let out = "";
+
+    if (!isNaN(n)) {
+        for (let i = 1; i <= 10; i++) {
+            out += n + " x " + i + " = " + (n * i) + "\n";
+        }
+        document.getElementById("table").textContent = out;
+    } else {
+        document.getElementById("table").textContent = "Invalid input";
+    }
+}
+</script>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="sum()">Find Sum</button>
+
+<script>
+function sum() {
+    let total = 0;
+
+    do {
+        total += parseInt(prompt("Enter number:"));
+    } while (confirm("Add another?"));
+
+    document.write("Total Sum = " + total);
+}
+</script>
+
+</body>
+</html>

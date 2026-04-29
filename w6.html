@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Demo</title>
+
+    <!-- Internal CSS -->
+    <style>
+        body {
+            background: lightblue;
+            font-family: Arial;
+        }
+
+        h1 {
+            color: darkblue;
+        }
+
+        .internal {
+            color: green;
+            font-size: 20px;
+        }
+    </style>
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>CSS Styles Demo</h1>
+
+<!-- Inline CSS -->
+<p style="color:red; font-size:18px;">
+    Inline CSS paragraph
+</p>
+
+<!-- Internal CSS -->
+<p class="internal">
+    Internal CSS paragraph
+</p>
+
+<!-- External CSS -->
+<p class="external">
+    External CSS paragraph
+</p>
+
+</body>
+</html>
+
+<!-- style.css -->
+.external {
+    color: purple;
+    font-size: 22px;
+}

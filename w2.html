@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Animation</title>
+</head>
+
+<body>
+
+<center>
+    <p id="demo">TEXT</p>
+</center>
+
+<script>
+let size = 5;
+let grow = true;
+let text = document.getElementById("demo");
+
+function animate() {
+
+    if (grow) {
+        size += 5;
+        text.innerHTML = "TEXT GROWING";
+        text.style.fontSize = size + "px";
+        text.style.color = "red";
+
+        if (size >= 50) {
+            grow = false;
+        }
+
+    } else {
+        size -= 5;
+        text.innerHTML = "TEXT SHRINKING";
+        text.style.fontSize = size + "px";
+        text.style.color = "blue";
+
+        if (size <= 5) {
+            grow = true;
+        }
+    }
+}
+
+// run every 100ms
+setInterval(animate, 100);
+</script>
+
+</body>
+</html>

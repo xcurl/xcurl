@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+</head>
+
+<body>
+
+<form id="registrationForm">
+    First Name: <input type="text" id="firstName"><br><br>
+    Last Name: <input type="text" id="lastName"><br><br>
+    Password: <input type="password" id="password"><br><br>
+    Email: <input type="text" id="email"><br><br>
+    Mobile: <input type="text" id="mobile"><br><br>
+    Address: <textarea id="address"></textarea><br><br>
+
+    <button type="submit">Register</button>
+</form>
+
+<script>
+document.getElementById("registrationForm").addEventListener("submit", function(e) {
+
+    e.preventDefault(); // stop form submit
+
+    // get values
+    let fname = document.getElementById("firstName").value.trim();
+    let lname = document.getElementById("lastName").value.trim();
+    let pass = document.getElementById("password").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let mobile = document.getElementById("mobile").value.trim();
+    let addr = document.getElementById("address").value.trim();
+
+    let msg = "";
+
+    // First Name
+    if (!/^[A-Za-z]{6,}$/.test(fname)) {
+        msg += "First name must be alphabets & min 6 chars\n";
+    }
+
+    // Password
+    if (pass.length < 6) {
+        msg += "Password must be at least 6 chars\n";
+    }
+
+    // Email
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg += "Invalid email format\n";
+    }
+
+    // Mobile
+    if (!/^\d{10}$/.test(mobile)) {
+        msg += "Mobile must be 10 digits\n";
+    }
+
+    // Last Name
+    if (lname === "") {
+        msg += "Last name cannot be empty\n";
+    }
+
+    // Address
+    if (addr === "") {
+        msg += "Address cannot be empty\n";
+    }
+
+    // result
+    if (msg === "") {
+        alert("Registration successful!");
+    } else {
+        alert(msg);
+    }
+
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Content Manipulation</title>
+
+    <style>
+        #box {
+            border: 1px solid black;
+            min-height: 100px;
+            padding: 10px;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Content Manipulation</h2>
+
+<div id="box"></div><br>
+
+<input type="text" id="txt" placeholder="Enter text">
+
+<button onclick="add()">Add</button>
+<button onclick="replace()">Replace</button>
+<button onclick="del()">Delete</button>
+
+<script>
+function add() {
+    let t = document.getElementById("txt").value;
+
+    if (t.trim() === "") return;
+
+    document.getElementById("box").innerHTML += t + "\n";
+    document.getElementById("txt").value = "";
+}
+
+function replace() {
+    let t = document.getElementById("txt").value;
+
+    if (t.trim() === "") return;
+
+    document.getElementById("box").innerText = t;
+    document.getElementById("txt").value = "";
+}
+
+function del() {
+    document.getElementById("box").innerText = "";
+}
+</script>
+
+</body>
+</html>

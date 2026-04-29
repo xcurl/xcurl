@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="showTable()">Show Table</button>
+<pre id="table"></pre>
+
+<script>
+function showTable() {
+    let n = prompt("Enter number:");
+    let out = "";
+
+    if (!isNaN(n)) {
+        for (let i = 1; i <= 10; i++) {
+            out += n + " x " + i + " = " + (n * i) + "\n";
+        }
+        document.getElementById("table").textContent = out;
+    } else {
+        document.getElementById("table").textContent = "Invalid input";
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Analysis</title>
+</head>
+
+<body>
+
+<h2>Text Analysis</h2>
+
+<form onsubmit="analyze(event)">
+    <textarea id="text" rows="8" cols="40"></textarea><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+function analyze(e) {
+    e.preventDefault();
+
+    let t = document.getElementById("text").value;
+
+    let chars = t.replace(/\s+/g, "").length;
+    let words = t.trim() ? t.trim().split(/\s+/).length : 0;
+    let lines = t ? t.split("\n").length : 0;
+
+    alert("Characters: " + chars +
+          "\nWords: " + words +
+          "\nLines: " + lines);
+}
+</script>
+
+</body>
+</html>

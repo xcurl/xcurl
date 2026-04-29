@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="sum()">Find Sum</button>
+
+<script>
+function sum() {
+    let total = 0;
+
+    do {
+        total += parseInt(prompt("Enter number:"));
+    } while (confirm("Add another?"));
+
+    document.write("Total Sum = " + total);
+}
+</script>
+
+</body>
+</html>

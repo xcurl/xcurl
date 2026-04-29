@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Slider</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 24px;
+        }
+
+        #slider {
+            width: 500px;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        #slider img {
+            width: 100%;
+            height: 100%;
+            display: none;
+            object-fit: cover;
+        }
+
+        #slider img.active {
+            display: block;
+        }
+
+        button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px;
+            border: 0;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.82);
+            cursor: pointer;
+        }
+
+        #prev { left: 10px; }
+        #next { right: 10px; }
+
+        .dots {
+            margin-top: 16px;
+        }
+
+        .dots button {
+            position: static;
+            transform: none;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="slider">
+    <img alt="Slide 1" src="https://images.stockcake.com/public/a/6/1/a61b1a1a-71f4-493b-ae11-2b1d6235f9c2_large/sunlit-blooming-flower-stockcake.jpg" class="active">
+    <img alt="Slide 2" src="https://img.magnific.com/free-photo/cosmos-flowers_1373-83.jpg">
+    <img alt="Slide 3" src="https://www.propertyfinder.ae/blog/wp-content/uploads/2024/09/All-About-IMG-Worlds-of-Adventure1.jpg">
+
+    <button id="prev" type="button">Prev</button>
+    <button id="next" type="button">Next</button>
+</div>
+
+<br>
+
+<div class="dots">
+    <button type="button" onclick="show(0)">1</button>
+    <button type="button" onclick="show(1)">2</button>
+    <button type="button" onclick="show(2)">3</button>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let i = 0;
+    let imgs = document.querySelectorAll("#slider img");
+    let n = imgs.length;
+
+    function show(x) {
+        imgs[i].classList.remove("active");
+        i = x;
+        imgs[i].classList.add("active");
+    }
+
+    document.getElementById("prev").onclick = function() {
+        show((i - 1 + n) % n);
+    };
+
+    document.getElementById("next").onclick = function() {
+        show((i + 1) % n);
+    };
+
+    setInterval(function() {
+        show((i + 1) % n);
+    }, 3000);
+
+    window.show = show;
+});
+</script>
+
+</body>
+</html>

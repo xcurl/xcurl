@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paragraph Layers (OnClick)</title>
+
+    <style>
+        .p {
+            position: absolute;
+            width: 250px;
+            padding: 10px;
+            border: 2px solid black;
+        }
+
+        #p1 { top:100px; left:200px; background: lightblue; }
+        #p2 { top:130px; left:220px; background: lightgreen; }
+        #p3 { top:160px; left:240px; background: lightcoral; }
+    </style>
+</head>
+
+<body>
+
+<div class="p" id="p1" onclick="topIt('p1')">First Paragraph</div>
+<div class="p" id="p2" onclick="topIt('p2')">Second Paragraph</div>
+<div class="p" id="p3" onclick="topIt('p3')">Third Paragraph</div>
+
+<script>
+let current = "";
+
+function topIt(id) {
+
+    if (current && current !== id) {
+        document.getElementById(current).style.zIndex = "";
+    }
+
+    document.getElementById(id).style.zIndex = "10";
+    current = id;
+}
+</script>
+
+</body>
+</html>
+
+<!--w7b.html-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paragraph Layers (OnClick)</title>
+
+    <style>
+        .p {
+            position: absolute;
+            width: 250px;
+            padding: 10px;
+            border: 2px solid black;
+        }
+
+        #p1 { top:100px; left:200px; background: lightblue; }
+        #p2 { top:130px; left:220px; background: lightgreen; }
+        #p3 { top:160px; left:240px; background: lightcoral; }
+    </style>
+</head>
+
+<body>
+
+<div class="p" id="p1" onclick="topIt('p1')">First Paragraph</div>
+<div class="p" id="p2" onclick="topIt('p2')">Second Paragraph</div>
+<div class="p" id="p3" onclick="topIt('p3')">Third Paragraph</div>
+
+<script>
+let current = "";
+
+function topIt(id) {
+
+    if (current && current !== id) {
+        document.getElementById(current).style.zIndex = "";
+    }
+
+    document.getElementById(id).style.zIndex = "10";
+    current = id;
+}
+</script>
+
+</body>
+</html>
