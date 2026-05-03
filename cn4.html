@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diffie-Hellman</title>
+</head>
+<body style="font-family:Arial; text-align:center; margin-top:50px;">
+
+    <h2>Diffie-Hellman Key Exchange</h2>
+
+    <input type="number" id="aliceKey" placeholder="Enter Alice's private key">
+    <br><br>
+    <button onclick="exchange()">Compute Shared Secret</button>
+
+    <p id="result"></p>
+
+    <script>
+        const p = 23;
+        const g = 5;
+        const bobPrivateKey = 6;
+
+        function powerMod(base, exp, mod) {
+            let result = 1;
+            base %= mod;
+
+            while (exp > 0) {
+                if (exp % 2) result = (result * base) % mod;
+                exp = Math.floor(exp / 2);
+                base = (base * base) % mod;
+            }
+
+            return result;
+        }
+
+        function exchange() {
+            const a = parseInt(document.getElementById("aliceKey").value);
+
+            if (!a || a <= 0) {
+                document.getElementById("result").innerText = "Enter valid key";
+                return;
+            }
+
+            const A = powerMod(g, a, p);
+            const B = powerMod(g, bobPrivateKey, p);
+
+            const secretA = powerMod(B, a, p);
+            const secretB = powerMod(A, bobPrivateKey, p);
+
+            let output = `
+                p: ${p} <br>
+                g: ${g} <br>
+                Alice Private: ${a} <br>
+                Alice Public: ${A} <br>
+                Bob Public: ${B} <br>
+                Secret (Alice): ${secretA} <br>
+                Secret (Bob): ${secretB} <br>
+            `;
+
+            output += (secretA === secretB)
+                ? "<br>Success! Keys match."
+                : "<br>Error! Keys do not match.";
+
+            document.getElementById("result").innerHTML = output;
+        }
+    </script>
+
+</body>
+</html>
