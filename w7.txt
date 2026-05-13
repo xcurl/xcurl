@@ -1,84 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Paragraph Layers (Hover)</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <style>
-        .p {
+        .p{
+            width: 300px;
+            height: 100px;
+            border: solid 1px black;
             position: absolute;
-            width: 250px;
-            padding: 10px;
-            border: 2px solid black;
+        }
+        #p1{
+            background-color: yellow;
+            top:120px;
+            left:220px;
+        }
+        #p2{
+            background-color: rgb(130, 185, 35);
+            top:180px;
+            left:280px;
+        }
+        #p3{
+            background-color: #c3a4dc;
+            top:260px;
+            left:360px;
         }
 
-        #p1 { top:100px; left:200px; background: lightblue; }
-        #p2 { top:130px; left:220px; background: lightgreen; }
-        #p3 { top:160px; left:240px; background: lightcoral; }
-    </style>
-</head>
-
-<body>
-
-<div class="p" id="p1" onmouseover="topIt('p1')">First Paragraph</div>
-<div class="p" id="p2" onmouseover="topIt('p2')">Second Paragraph</div>
-<div class="p" id="p3" onmouseover="topIt('p3')">Third Paragraph</div>
-
-<script>
-let current = "";
-
-function topIt(id) {
-    if (current && current !== id) {
-        document.getElementById(current).style.zIndex = "";
-    }
-
-    document.getElementById(id).style.zIndex = "10";
-    current = id;
-}
-</script>
-
-</body>
-</html>
-
-<!--w7b.html-->
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Paragraph Layers (OnClick)</title>
-
-    <style>
-        .p {
-            position: absolute;
-            width: 250px;
-            padding: 10px;
-            border: 2px solid black;
+        #p4{
+            background-color: rgb(255, 0, 0);
+            top:120px;
+            left:820px;
+        }
+        #p5{
+            background-color: rgb(0, 255, 0);
+            top:180px;
+            left:850px;
+        }
+        #p6{
+            background-color: rgb(0, 0, 255);
+            top:260px;
+            left:890px;
         }
 
-        #p1 { top:100px; left:200px; background: lightblue; }
-        #p2 { top:130px; left:220px; background: lightgreen; }
-        #p3 { top:160px; left:240px; background: lightcoral; }
     </style>
 </head>
-
 <body>
+    <div class="p" id="p1" onmouseover="topit('p1')"> Hello This is a first Paragraph </div>
+    <div class="p" id="p2" onmouseover="topit('p2')"> Hello This is a Second Paragraph </div>
+    <div class="p" id="p3" onmouseover="topit('p3')"> Hello This is a third Paragraph </div>
 
-<div class="p" id="p1" onclick="topIt('p1')">First Paragraph</div>
-<div class="p" id="p2" onclick="topIt('p2')">Second Paragraph</div>
-<div class="p" id="p3" onclick="topIt('p3')">Third Paragraph</div>
 
-<script>
-let current = "";
+ 
 
-function topIt(id) {
-
-    if (current && current !== id) {
-        document.getElementById(current).style.zIndex = "";
-    }
-
-    document.getElementById(id).style.zIndex = "10";
-    current = id;
-}
-</script>
-
+    <div class="p" id="p4" onmouseover="topit('p4')" onmouseout="reset()"> Hello This is a first Paragraph </div>
+    <div class="p" id="p5" onmouseover="topit('p5')" onmouseout="reset()"> Hello This is a Second Paragraph </div>
+    <div class="p" id="p6" onmouseover="topit('p6')" onmouseout="reset()"> Hello This is a third Paragraph </div>
+    
+    
+    <script>
+        let current ="";
+        function topit(id){
+            if(current && current!==id){
+                document.getElementById(current).style.zIndex = "";
+                //current was passed as string 
+            }
+            document.getElementById(id).style.zIndex = "20";
+            current=id;
+        }
+        function reset(){
+            if(current){
+                document.getElementById(current).style.zIndex = "";
+                current="";
+            }
+        }
+      </script>
 </body>
 </html>
