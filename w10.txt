@@ -1,0 +1,74 @@
+import React, { Component } from "react";
+import Welcome from "./welcome";
+import "./App.css";
+
+class UserProfile extends Component {
+  render() {
+    return (
+      <div className="card">
+        <h2>Hello from Class Component</h2>
+        <p>The passed name = {this.props.name}</p>
+        <p>The passed section = {this.props.section}</p>
+      </div>
+    );
+  }
+}
+
+function App() {
+  return (
+    <div className="App">
+      <h1>Hello this is the main app!</h1>
+      <Welcome name="Reva" />
+      <UserProfile name="darshan" section="CSEB" />
+    </div>
+  );
+}
+
+export default App;
+
+
+---component--
+import React from "react";
+
+const Welcome = (props) => {
+  return (
+    <div className="card">
+      <h2>Hello from Functional Component</h2>
+      <p>Name = {props.name}</p>
+    </div>
+  );
+};
+
+export default Welcome;
+
+
+--css
+.App {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 24px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  background: #f3f4f6;
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 24px;
+}
+
+.card {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
