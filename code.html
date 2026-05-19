@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML Runner</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0f1117;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+
+        .topbar {
+            height: 58px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: #161b22;
+            border-bottom: 1px solid #262c36;
+        }
+
+        .topbar h1 {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Layout */
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            padding: 5px;
+            overflow: hidden;
+        }
+
+        /* Panels */
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: #161b22;
+            border: 1px solid #262c36;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .panel-header {
+            height: 46px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid #262c36;
+            background: #1c2128;
+        }
+
+        .panel-header h2 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #c9d1d9;
+        }
+
+        /* Editor */
+
+        .editor-wrapper {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+            background: #0d1117;
+            display: flex;
+        }
+
+        /* ── Gutter (line numbers) ── */
+
+        #gutter {
+            flex-shrink: 0;
+            width: 52px;
+            padding: 16px 0;
+            background: #0d1117;
+            border-right: 1px solid #1e2530;
+            overflow: hidden;           /* scrolled by JS, not natively */
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            line-height: 1.6;
+            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+            color: #3d444d;
+            text-align: right;
+        }
+
+        #gutter .ln {
+            display: block;
+            padding-right: 12px;
+        }
+
+        /* ── Code area (highlighting + textarea overlay) ── */
+
+        .code-area {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Both layers MUST share every property that affects text layout */
+        #highlighting,
+        #source {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+            padding: 16px 16px 16px 12px;
+            width: 100%;
+            height: 100%;
+            /* identical text layout — any difference shifts cursor */
+            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            box-sizing: border-box;
+        }
+
+        #highlighting {
+            pointer-events: none;
+            color: #e6edf3;
+            z-index: 1;
+            /* scrollable so JS sync works, but scrollbars hidden */
+            overflow: scroll;
+            scrollbar-width: none;       /* Firefox */
+        }
+
+        #highlighting::-webkit-scrollbar {
+            display: none;               /* Chrome/Safari */
+        }
+
+        #source {
+            border: none;
+            resize: none;
+            outline: none;
+            background: transparent;
+            color: transparent;
+            caret-color: #ffffff;
+            z-index: 2;
+            overflow: auto;
+        }
+
+        #source::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        #source::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 20px;
+        }
+
+        /* ── Indent guides ── */
+
+        .ig {
+            display: inline;
+            box-shadow: -1px 0 0 0 rgba(255,255,255,0.10) inset;
+            /* creates a left-edge hairline without shifting text */
+        }
+
+        /* ── Syntax token colors — HTML ── */
+
+        .hl-bracket   { color: #e6edf3; }
+        .hl-tag       { color: #7ee787; }
+        .hl-attr      { color: #79c0ff; }
+        .hl-string    { color: #ffa657; }
+        .hl-comment   { color: #8b949e; font-style: italic; }
+        .hl-doctype   { color: #d2a8ff; }
+        .hl-equals    { color: #e6edf3; }
+        .hl-text      { color: #e6edf3; }
+
+        /* Syntax Highlighting token colors — JS (inside <script>) */
+
+        .js-keyword   { color: #ff7b72; }   /* var let const if …   */
+        .js-string    { color: #ffa657; }   /* "…" '…' `…`          */
+        .js-comment   { color: #8b949e; font-style: italic; }
+        .js-number    { color: #79c0ff; }   /* 42  0xff  3.14       */
+        .js-fn        { color: #d2a8ff; }   /* function calls       */
+        .js-builtin   { color: #f0883e; }   /* console document …   */
+        .js-punct     { color: #e6edf3; }   /* { } ( ) ; ,          */
+        .js-ident     { color: #e6edf3; }   /* other identifiers    */
+
+        /* Syntax Highlighting token colors — CSS (inside <style>) */
+
+        .css-selector { color: #7ee787; }
+        .css-prop     { color: #79c0ff; }
+        .css-value    { color: #ffa657; }
+        .css-comment  { color: #8b949e; font-style: italic; }
+        .css-punct    { color: #e6edf3; }
+
+        /* Preview */
+
+        iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #ffffff;
+        }
+
+        /* Buttons */
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        #runButton {
+            background: #238636;
+            color: white;
+        }
+
+        #runButton:hover {
+            background: #2ea043;
+        }
+
+        #resetButton {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+
+        #resetButton:hover {
+            background: #30363d;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 980px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                overflow: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="topbar">
+        <h1>HTML Runner</h1>
+
+        <div class="topbar-actions">
+            <button id="resetButton" type="button">Reset</button>
+            <button id="runButton" type="button">Run HTML</button>
+        </div>
+    </div>
+
+    <main>
+
+        <!-- Editor -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <h2>HTML Source</h2>
+            </div>
+
+            <div class="editor-wrapper">
+
+                <div id="gutter" aria-hidden="true"></div>
+
+                <div class="code-area">
+                    <pre id="highlighting" aria-hidden="true"></pre>
+                    <textarea id="source" spellcheck="false">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Preview</title>
+</head>
+<body>
+    <h1>Hello from the runner!</h1>
+
+    <p>This HTML is executed inside the preview frame.</p>
+
+    <button onclick="alert('This works!')">
+        Click me
+    </button>
+</body>
+</html>
+                </textarea>
+                </div><!-- /.code-area -->
+
+            </div><!-- /.editor-wrapper -->
+
+        </section>
+
+        <!-- Preview -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <h2>Preview</h2>
+            </div>
+
+            <iframe id="preview"
+                sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        const source       = document.getElementById('source');
+        const preview      = document.getElementById('preview');
+        const runButton    = document.getElementById('runButton');
+        const resetButton  = document.getElementById('resetButton');
+        const highlighting = document.getElementById('highlighting');
+        const gutter       = document.getElementById('gutter');
+
+        const initialContent = source.value.trim();
+
+        /* ── RENDER LOGIC ──────────────────────────────────────── */
+
+        function renderPreview() {
+            const html = source.value;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url  = URL.createObjectURL(blob);
+            preview.src = url;
+            preview.onload = () => URL.revokeObjectURL(url);
+        }
+
+        runButton.addEventListener('click', renderPreview);
+
+        resetButton.addEventListener('click', () => {
+            source.value = initialContent;
+            updateHighlight();
+            renderPreview();
+        });
+
+        document.addEventListener('DOMContentLoaded', renderPreview);
+
+        /* ── TOKENIZER-BASED SYNTAX HIGHLIGHTER ────────────────── *
+         *
+         * Single-pass tokenizer — never runs regexes over already-
+         * emitted HTML, so span tags never get mangled.
+         *
+         * Supports:
+         *   HTML  — comments, doctype, tags, attrs, quoted values
+         *   JS    — inside <script> blocks (keywords, strings,
+         *           comments, numbers, function calls, builtins)
+         *   CSS   — inside <style> blocks (selectors, props, values)
+         *
+         * ──────────────────────────────────────────────────────── */
+
+        function esc(s) {
+            return s
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function span(cls, text) {
+            return `<span class="${cls}">${text}</span>`;
+        }
+
+        /* ── JS HIGHLIGHTER ──────────────────────────────────── */
+
+        const JS_KEYWORDS = new Set([
+            'var','let','const','function','return','if','else','for',
+            'while','do','switch','case','break','continue','new','this',
+            'typeof','instanceof','class','extends','import','export',
+            'default','try','catch','finally','throw','async','await',
+            'of','in','void','delete','yield','true','false','null',
+            'undefined','static','super','from','with','debugger'
+        ]);
+
+        const JS_BUILTINS = new Set([
+            'console','document','window','Math','JSON','Object','Array',
+            'String','Number','Boolean','Date','Promise','Error','Map',
+            'Set','RegExp','Symbol','parseInt','parseFloat','isNaN',
+            'isFinite','setTimeout','setInterval','clearTimeout',
+            'clearInterval','fetch','alert','confirm','prompt',
+            'addEventListener','removeEventListener','querySelector',
+            'querySelectorAll','getElementById','getElementsByClassName'
+        ]);
+
+        function highlightJS(code) {
+            let out = '';
+            let i   = 0;
+            const len = code.length;
+
+            while (i < len) {
+
+                /* Single-line comment */
+                if (code[i] === '/' && code[i + 1] === '/') {
+                    const nl = code.indexOf('\n', i);
+                    const end = nl === -1 ? len : nl;
+                    out += span('js-comment', esc(code.slice(i, end)));
+                    i = end;
+                    continue;
+                }
+
+                /* Multi-line comment */
+                if (code[i] === '/' && code[i + 1] === '*') {
+                    const end = code.indexOf('*/', i + 2);
+                    if (end !== -1) {
+                        out += span('js-comment', esc(code.slice(i, end + 2)));
+                        i = end + 2;
+                    } else {
+                        out += span('js-comment', esc(code.slice(i)));
+                        i = len;
+                    }
+                    continue;
+                }
+
+                /* Template literal */
+                if (code[i] === '`') {
+                    let val = '`';
+                    i++;
+                    while (i < len && code[i] !== '`') {
+                        if (code[i] === '\\') {
+                            val += code[i] + (code[i + 1] || '');
+                            i += 2;
+                        } else {
+                            val += code[i++];
+                        }
+                    }
+                    val += '`';
+                    if (i < len) i++;
+                    out += span('js-string', esc(val));
+                    continue;
+                }
+
+                /* String literals " or ' */
+                if (code[i] === '"' || code[i] === "'") {
+                    const q = code[i];
+                    let val = q;
+                    i++;
+                    while (i < len && code[i] !== q && code[i] !== '\n') {
+                        if (code[i] === '\\') {
+                            val += code[i] + (code[i + 1] || '');
+                            i += 2;
+                        } else {
+                            val += code[i++];
+                        }
+                    }
+                    val += (i < len && code[i] === q) ? q : '';
+                    if (i < len && code[i] === q) i++;
+                    out += span('js-string', esc(val));
+                    continue;
+                }
+
+                /* Numbers — hex / decimal / float */
+                if (
+                    /[0-9]/.test(code[i]) ||
+                    (code[i] === '.' && /[0-9]/.test(code[i + 1]))
+                ) {
+                    let num = '';
+                    if (code[i] === '0' && /[xX]/.test(code[i + 1])) {
+                        num += code[i] + code[i + 1];
+                        i += 2;
+                        while (i < len && /[0-9a-fA-F]/.test(code[i])) num += code[i++];
+                    } else {
+                        while (i < len && /[0-9.eExX_]/.test(code[i])) num += code[i++];
+                    }
+                    out += span('js-number', esc(num));
+                    continue;
+                }
+
+                /* Identifiers, keywords, builtins, function calls */
+                if (/[a-zA-Z_$]/.test(code[i])) {
+                    let word = '';
+                    while (i < len && /[a-zA-Z0-9_$]/.test(code[i])) word += code[i++];
+
+                    /* Peek past whitespace to see if '(' follows */
+                    let j = i;
+                    while (j < len && code[j] === ' ') j++;
+
+                    if (JS_KEYWORDS.has(word)) {
+                        out += span('js-keyword', word);
+                    } else if (JS_BUILTINS.has(word)) {
+                        out += span('js-builtin', word);
+                    } else if (code[j] === '(') {
+                        out += span('js-fn', word);
+                    } else {
+                        out += span('js-ident', esc(word));
+                    }
+                    continue;
+                }
+
+                /* Punctuation / operators */
+                if (/[{}()[\];,.]/.test(code[i])) {
+                    out += span('js-punct', esc(code[i++]));
+                    continue;
+                }
+
+                /* Everything else: whitespace, operators */
+                out += esc(code[i++]);
+            }
+
+            return out;
+        }
+
+        /* ── CSS HIGHLIGHTER ─────────────────────────────────── */
+
+        function highlightCSS(code) {
+            let out = '';
+            let i   = 0;
+            const len = code.length;
+
+            while (i < len) {
+
+                /* Comment */
+                if (code[i] === '/' && code[i + 1] === '*') {
+                    const end = code.indexOf('*/', i + 2);
+                    if (end !== -1) {
+                        out += span('css-comment', esc(code.slice(i, end + 2)));
+                        i = end + 2;
+                    } else {
+                        out += span('css-comment', esc(code.slice(i)));
+                        i = len;
+                    }
+                    continue;
+                }
+
+                /* Opening brace — everything before it is a selector */
+                if (code[i] === '{') {
+                    out += span('css-punct', '{');
+                    i++;
+                    /* Inside rule block: prop: value; pairs */
+                    while (i < len && code[i] !== '}') {
+                        /* Collect property name */
+                        let prop = '';
+                        while (i < len && code[i] !== ':' && code[i] !== '}') {
+                            prop += code[i++];
+                        }
+                        if (prop.trim()) {
+                            /* Split leading whitespace from prop name */
+                            const ws = prop.match(/^(\s*)([\s\S]*)$/);
+                            out += ws[1] + span('css-prop', esc(ws[2].trimEnd())) + (ws[2] !== ws[2].trimEnd() ? ws[2].slice(ws[2].trimEnd().length) : '');
+                        }
+                        if (i < len && code[i] === ':') {
+                            out += span('css-punct', ':');
+                            i++;
+                            /* Collect value until ; or } */
+                            let val = '';
+                            while (i < len && code[i] !== ';' && code[i] !== '}') val += code[i++];
+                            if (val) out += span('css-value', esc(val));
+                            if (i < len && code[i] === ';') {
+                                out += span('css-punct', ';');
+                                i++;
+                            }
+                        }
+                    }
+                    if (i < len && code[i] === '}') {
+                        out += span('css-punct', '}');
+                        i++;
+                    }
+                    continue;
+                }
+
+                /* Accumulate selector text until '{' */
+                let sel = '';
+                while (i < len && code[i] !== '{' && !(code[i] === '/' && code[i+1] === '*')) {
+                    sel += code[i++];
+                }
+                if (sel.trim()) {
+                    out += span('css-selector', esc(sel));
+                } else {
+                    out += esc(sel);
+                }
+            }
+
+            return out;
+        }
+
+        /* ── HTML TAG TOKENIZER ──────────────────────────────── */
+
+        /**
+         * Find the real closing '>' of a tag, skipping over
+         * quoted attribute values so that onclick="a > b" works.
+         */
+        function findTagClose(src, from) {
+            let inQ = null;
+            for (let j = from; j < src.length; j++) {
+                const c = src[j];
+                if (inQ) {
+                    if (c === inQ) inQ = null;
+                } else if (c === '"' || c === "'") {
+                    inQ = c;
+                } else if (c === '>') {
+                    return j;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * Highlight the raw content between '<' and '>'.
+         * Returns a coloured HTML string including the brackets.
+         */
+        function tokenizeTag(inner) {
+            let out = span('hl-bracket', '&lt;');
+            let i   = 0;
+
+            /* Closing slash */
+            if (inner[i] === '/') {
+                out += span('hl-bracket', '/');
+                i++;
+            }
+
+            /* !DOCTYPE */
+            if (inner[i] === '!') {
+                out += span('hl-doctype', esc(inner));
+                out += span('hl-bracket', '&gt;');
+                return out;
+            }
+
+            /* Tag name */
+            let name = '';
+            while (i < inner.length && !/[\s/>]/.test(inner[i])) {
+                name += inner[i++];
+            }
+            if (name) out += span('hl-tag', esc(name));
+
+            /* Attributes */
+            while (i < inner.length) {
+                const ch = inner[i];
+
+                /* Whitespace — preserve exactly */
+                if (/\s/.test(ch)) {
+                    out += ch;
+                    i++;
+                    continue;
+                }
+
+                /* Self-closing slash */
+                if (ch === '/') {
+                    out += span('hl-bracket', '/');
+                    i++;
+                    continue;
+                }
+
+                /* Attribute name */
+                let attr = '';
+                while (
+                    i < inner.length &&
+                    inner[i] !== '=' &&
+                    !/[\s/>]/.test(inner[i])
+                ) {
+                    attr += inner[i++];
+                }
+                if (attr) out += span('hl-attr', esc(attr));
+
+                /* '=' and value */
+                if (inner[i] === '=') {
+                    out += span('hl-equals', '=');
+                    i++;
+
+                    const q = inner[i];
+                    if (q === '"' || q === "'") {
+                        i++;
+                        let val = '';
+                        while (i < inner.length && inner[i] !== q) {
+                            val += inner[i++];
+                        }
+                        out += q
+                            + span('hl-string', esc(val))
+                            + q;
+                        if (i < inner.length) i++; /* closing quote */
+                    } else {
+                        /* Unquoted value */
+                        let val = '';
+                        while (i < inner.length && !/\s/.test(inner[i])) {
+                            val += inner[i++];
+                        }
+                        if (val) out += span('hl-string', esc(val));
+                    }
+                }
+            }
+
+            out += span('hl-bracket', '&gt;');
+            return out;
+        }
+
+        /* ── MAIN HIGHLIGHTER ────────────────────────────────── */
+
+        /**
+         * Walk the raw source once.
+         * When a <script> or <style> opening tag is found, delegate
+         * the content to the appropriate sub-highlighter before
+         * continuing with normal HTML tokenization.
+         */
+        function highlightCode(raw) {
+            let result = '';
+            let i      = 0;
+
+            while (i < raw.length) {
+
+                /* HTML comment detection: open = <! + -- , close = -- + > */
+                if (raw.startsWith('<!' + '--', i)) {
+                    const end = raw.indexOf('--' + '>', i + 4);
+                    if (end !== -1) {
+                        result += span('hl-comment', esc(raw.slice(i, end + 3)));
+                        i = end + 3;
+                        continue;
+                    }
+                }
+
+                /* Tag */
+                if (raw[i] === '<') {
+                    const close = findTagClose(raw, i + 1);
+                    if (close !== -1) {
+                        const inner = raw.slice(i + 1, close);
+                        result += tokenizeTag(inner);
+                        i = close + 1;
+
+                        /* Detect opening <script> or <style> */
+                        const nameMatch = inner.match(/^([a-zA-Z][a-zA-Z0-9]*)/);
+                        const tagLow = nameMatch ? nameMatch[1].toLowerCase() : '';
+
+                        if (tagLow === 'script' && inner[0] !== '/') {
+                            const closeTag = raw.toLowerCase().indexOf('</' + 'script>', i);
+                            if (closeTag !== -1) {
+                                result += highlightJS(raw.slice(i, closeTag));
+                                i = closeTag; /* outer loop will handle the closing tag */
+                            }
+                        } else if (tagLow === 'style' && inner[0] !== '/') {
+                            const closeTag = raw.toLowerCase().indexOf('</' + 'style>', i);
+                            if (closeTag !== -1) {
+                                result += highlightCSS(raw.slice(i, closeTag));
+                                i = closeTag;
+                            }
+                        }
+                        continue;
+                    }
+                }
+
+                /* Plain text — accumulate a run for efficiency */
+                let text = '';
+                while (
+                    i < raw.length &&
+                    raw[i] !== '<' &&
+                    !raw.startsWith('<!' + '--', i)
+                ) {
+                    text += raw[i++];
+                }
+                if (text) result += span('hl-text', esc(text));
+            }
+
+            return result;
+        }
+
+        /* ── EDITOR SYNC ───────────────────────────────────────── */
+
+        /**
+         * Wrap every run of 4 spaces at the start of a highlighted
+         * line with an .ig span so the CSS hairline guide appears.
+         */
+        function injectIndentGuides(hlLine) {
+            return hlLine.replace(/^( {4})+/, (match) => {
+                let out = '';
+                for (let i = 0; i < match.length; i += 4) {
+                    out += '<span class="ig">    </span>';
+                }
+                return out;
+            });
+        }
+
+        function updateHighlight() {
+            const raw  = source.value;
+            const full = highlightCode(raw);
+
+            /* Split into lines, inject indent guides, rejoin */
+            highlighting.innerHTML = full
+                .split('\n')
+                .map(injectIndentGuides)
+                .join('\n');
+
+            /* Rebuild gutter line numbers */
+            const lineCount = raw.split('\n').length;
+            let gutterHTML  = '';
+            for (let n = 1; n <= lineCount; n++) {
+                gutterHTML += `<span class="ln">${n}</span>`;
+            }
+            gutter.innerHTML = gutterHTML;
+        }
+
+        /* Auto-run: re-render preview 600ms after the user stops typing */
+        let autoRunTimer = null;
+        source.addEventListener('input', () => {
+            updateHighlight();
+            clearTimeout(autoRunTimer);
+            autoRunTimer = setTimeout(renderPreview, 600);
+        });
+
+        /* Sync highlighting + gutter scroll to match the textarea */
+        source.addEventListener('scroll', () => {
+            highlighting.scrollTop  = source.scrollTop;
+            highlighting.scrollLeft = source.scrollLeft;
+            gutter.scrollTop        = source.scrollTop;
+        });
+
+        updateHighlight();
+
+    </script>
+
+</body>
+
+</html>
