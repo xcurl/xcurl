@@ -764,6 +764,12 @@
                         }
                         continue;
                     }
+
+                    /* Incomplete tag while typing (e.g. open quote/no '>'):
+                       treat '<' as plain text so we always advance. */
+                    result += span('hl-text', '&lt;');
+                    i++;
+                    continue;
                 }
 
                 /* Plain text — accumulate a run for efficiency */
