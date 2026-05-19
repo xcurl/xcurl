@@ -100,22 +100,29 @@
         #gutter {
             flex-shrink: 0;
             width: 52px;
-            padding: 16px 0;
+            padding: 16px 0 16px;
             background: #0d1117;
             border-right: 1px solid #1e2530;
-            overflow: hidden;           /* scrolled by JS, not natively */
+            overflow: auto;             /* scrolled by JS, scrollbar hidden */
             user-select: none;
             pointer-events: none;
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 20px;
             font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
             color: #3d444d;
             text-align: right;
+            scrollbar-width: none;
         }
 
         #gutter .ln {
             display: block;
+            height: 20px;
+            line-height: 20px;
             padding-right: 12px;
+        }
+
+        #gutter::-webkit-scrollbar {
+            display: none;
         }
 
         /* ── Code area (highlighting + textarea overlay) ── */
@@ -124,30 +131,39 @@
             position: relative;
             flex: 1;
             overflow: hidden;
+            --source-sbw: 0px;
+            --source-sbh: 0px;
         }
 
         /* Both layers MUST share every property that affects text layout */
         #highlighting,
         #source {
             position: absolute;
-            inset: 0;
+            top: 16px;
+            left: 12px;
             margin: 0;
-            padding: 16px 16px 16px 12px;
-            width: 100%;
-            height: 100%;
+            padding: 0;
+            width: auto;
+            height: auto;
             /* identical text layout — any difference shifts cursor */
             font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
             font-size: 13px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
+            line-height: 20px;
+            letter-spacing: 0;
+            font-variant-ligatures: none;
+            font-feature-settings: "liga" 0, "calt" 0;
+            /* Keep logical line == visual line for gutter alignment */
+            white-space: pre;
+            word-wrap: normal;
+            overflow-wrap: normal;
             tab-size: 4;
             -moz-tab-size: 4;
             box-sizing: border-box;
         }
 
         #highlighting {
+            right: calc(16px + var(--source-sbw));
+            bottom: calc(16px + var(--source-sbh));
             pointer-events: none;
             color: #e6edf3;
             z-index: 1;
@@ -161,6 +177,8 @@
         }
 
         #source {
+            right: 16px;
+            bottom: 16px;
             border: none;
             resize: none;
             outline: none;
@@ -179,14 +197,6 @@
         #source::-webkit-scrollbar-thumb {
             background: #30363d;
             border-radius: 20px;
-        }
-
-        /* ── Indent guides ── */
-
-        .ig {
-            display: inline;
-            box-shadow: -1px 0 0 0 rgba(255,255,255,0.10) inset;
-            /* creates a left-edge hairline without shifting text */
         }
 
         /* ── Syntax token colors — HTML ── */
@@ -300,7 +310,7 @@
 
                 <div class="code-area">
                     <pre id="highlighting" aria-hidden="true"></pre>
-                    <textarea id="source" spellcheck="false">
+                    <textarea id="source" spellcheck="false" wrap="off">
 <!DOCTYPE html>
 <html>
 <head>
@@ -346,6 +356,7 @@
         const resetButton  = document.getElementById('resetButton');
         const highlighting = document.getElementById('highlighting');
         const gutter       = document.getElementById('gutter');
+        const codeArea     = document.querySelector('.code-area');
 
         const initialContent = source.value.trim();
 
@@ -789,29 +800,12 @@
 
         /* ── EDITOR SYNC ───────────────────────────────────────── */
 
-        /**
-         * Wrap every run of 4 spaces at the start of a highlighted
-         * line with an .ig span so the CSS hairline guide appears.
-         */
-        function injectIndentGuides(hlLine) {
-            return hlLine.replace(/^( {4})+/, (match) => {
-                let out = '';
-                for (let i = 0; i < match.length; i += 4) {
-                    out += '<span class="ig">    </span>';
-                }
-                return out;
-            });
-        }
-
         function updateHighlight() {
             const raw  = source.value;
             const full = highlightCode(raw);
 
-            /* Split into lines, inject indent guides, rejoin */
-            highlighting.innerHTML = full
-                .split('\n')
-                .map(injectIndentGuides)
-                .join('\n');
+            /* Keep character-for-character mapping with textarea */
+            highlighting.innerHTML = full;
 
             /* Rebuild gutter line numbers */
             const lineCount = raw.split('\n').length;
@@ -820,6 +814,15 @@
                 gutterHTML += `<span class="ln">${n}</span>`;
             }
             gutter.innerHTML = gutterHTML;
+
+            syncOverlayViewport();
+        }
+
+        function syncOverlayViewport() {
+            const sbw = Math.max(0, source.offsetWidth - source.clientWidth);
+            const sbh = Math.max(0, source.offsetHeight - source.clientHeight);
+            codeArea.style.setProperty('--source-sbw', `${sbw}px`);
+            codeArea.style.setProperty('--source-sbh', `${sbh}px`);
         }
 
         /* Auto-run: re-render preview 600ms after the user stops typing */
@@ -836,6 +839,8 @@
             highlighting.scrollLeft = source.scrollLeft;
             gutter.scrollTop        = source.scrollTop;
         });
+
+        window.addEventListener('resize', syncOverlayViewport);
 
         /* Editor-like tab behavior (Tab to indent, Shift+Tab to outdent) */
         source.addEventListener('keydown', (e) => {
