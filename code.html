@@ -831,6 +831,56 @@
             gutter.scrollTop        = source.scrollTop;
         });
 
+        /* Editor-like tab behavior (Tab to indent, Shift+Tab to outdent) */
+        source.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab') return;
+            e.preventDefault();
+
+            const INDENT = '    ';
+            const start = source.selectionStart;
+            const end = source.selectionEnd;
+            const val = source.value;
+
+            /* Single caret: insert 4 spaces */
+            if (start === end) {
+                source.value = val.slice(0, start) + INDENT + val.slice(end);
+                source.selectionStart = source.selectionEnd = start + INDENT.length;
+            } else {
+                /* Multi-line selection: indent or outdent selected lines */
+                const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+                const selected = val.slice(lineStart, end);
+                const lines = selected.split('\n');
+
+                if (e.shiftKey) {
+                    let removed = 0;
+                    const outdented = lines.map((line) => {
+                        if (line.startsWith(INDENT)) {
+                            removed += INDENT.length;
+                            return line.slice(INDENT.length);
+                        }
+                        if (line.startsWith('\t')) {
+                            removed += 1;
+                            return line.slice(1);
+                        }
+                        return line;
+                    });
+
+                    source.value = val.slice(0, lineStart) + outdented.join('\n') + val.slice(end);
+                    source.selectionStart = lineStart;
+                    source.selectionEnd = end - removed;
+                } else {
+                    const indented = lines.map((line) => INDENT + line);
+                    source.value = val.slice(0, lineStart) + indented.join('\n') + val.slice(end);
+                    source.selectionStart = start + INDENT.length;
+                    source.selectionEnd = end + (INDENT.length * lines.length);
+                }
+            }
+
+            updateHighlight();
+            clearTimeout(autoRunTimer);
+            autoRunTimer = setTimeout(renderPreview, 600);
+        });
+
         updateHighlight();
 
     </script>
